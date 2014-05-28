@@ -35,6 +35,8 @@
            [org.elasticsearch.search.facet.range RangeFacet RangeFacet$Entry]
            [org.elasticsearch.search.facet.histogram HistogramFacet HistogramFacet$Entry]
            [org.elasticsearch.search.facet.datehistogram DateHistogramFacet DateHistogramFacet$Entry]
+           org.elasticsearch.search.suggest.Suggest
+           org.elasticsearch.search.suggest.Suggest$Suggestion
            org.elasticsearch.search.facet.statistical.StatisticalFacet
            [org.elasticsearch.search.facet.termsstats TermsStatsFacet TermsStatsFacet$Entry]
            [org.elasticsearch.search.facet.geodistance GeoDistanceFacet GeoDistanceFacet$Entry]
@@ -618,6 +620,17 @@
    :max_score (.getMaxScore hits)
    :hits      (map search-hit->map (.getHits hits))})
 
+(defprotocol SuggestionEntryConversion
+  (^IPersistentMap suggestion-entry-to-map [suggestion-entry] "Suggestion entry to map"))
+(extend-protocol SuggestionEntryConversion
+  Suggest$Suggestion$Entry
+  (suggestion-entry-to-map [^Suggest$Suggestion$Entry entry]
+    {
+        :text (.getText entry)
+    }
+)
+)
+
 (defprotocol FacetConversion
   (^IPersistentMap facet-to-map [facet] "Converts a facet into a Clojure map"))
 (extend-protocol FacetConversion
@@ -744,6 +757,16 @@
             {}
             (.facetsAsMap facets))))
 
+(defn- search-suggestions->seq
+  [^Suggest suggest]
+  (when suggest
+    (reduce (fn [acc [^String name ^Suggest$Suggestion suggestion]]
+              (assoc acc (keyword name) (suggestion-entry-to-map suggestion)))
+            {}
+            (.suggestionsAsMap suggestion))))
+
+
+
 (defn search-response->seq
   [^SearchResponse r]
   ;; Example REST API response:
@@ -781,7 +804,7 @@
    :timed_out  (.isTimedOut r)
    :_scroll_id (.getScrollId r)
    :facets     (search-facets->seq (.getFacets r))
-   ;; TODO: suggestions
+   :suggest    (search-suggest->seq (.getSuggestions r))
    :_shards    {:total      (.getTotalShards r)
                 :successful (.getSuccessfulShards r)
                 :failed     (.getFailedShards r)}
