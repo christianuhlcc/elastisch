@@ -809,7 +809,7 @@
    :timed_out  (.isTimedOut r)
    :_scroll_id (.getScrollId r)
    :facets     (search-facets->seq (.getFacets r))
-   :suggest    (search-suggestions->seq (.getSuggestions r))
+   :suggest    (search-suggestions->seq (.getSuggest r))
    :_shards    {:total      (.getTotalShards r)
                 :successful (.getSuccessfulShards r)
                 :failed     (.getFailedShards r)}
