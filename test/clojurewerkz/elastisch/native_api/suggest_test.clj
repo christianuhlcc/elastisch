@@ -25,11 +25,10 @@
         mapping-type "article"
         result       (doc/search conn index-name mapping-type
                                  :query (q/match-all)
-                                 :suggest :my-suggest {:text "foo" :term {:field "tags"}})
+                                 :suggest { :mysuggest {:text "foo" :term {:field "tags"}}})
         suggestions       (suggestions-from result)]
-      (is (= 0 (-> suggestions :my-suggest :options))))))
+      (is (= 1 (count suggestions))))))
 ;;    (is (> (-> facets :tags :total) 25))
 ;;    ;; each term is a map with 2 keys: :term and :count
 ;;    (is (-> facets :tags :terms first :term))
 ;;    (is (-> facets :tags :terms first :count))))
-

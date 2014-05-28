@@ -508,7 +508,7 @@
 (defn ^SearchRequest ->search-request
   [index-name mapping-type {:keys [search-type search_type scroll routing
                                    preference
-                                   query facets from size timeout post-filter
+                                   query facets suggest from size timeout post-filter
                                    min_score version fields sort stats] :as options}]
   (let [r                       (SearchRequest.)
         ^SearchSourceBuilder sb (SearchSourceBuilder.)]
@@ -518,6 +518,8 @@
       (.query sb ^Map (wlk/stringify-keys query)))
     (when facets
       (.facets sb ^Map (wlk/stringify-keys facets)))
+    (when suggest
+      (.suggest sb ^Map (wlk/stringify-keys suggest)))
     (when from
       (.from sb from))
     (when size
@@ -766,10 +768,12 @@
 (defn- search-suggestions->seq
   [^Suggest suggestions]
   (when suggestions
-    (reduce (fn [acc [^String name ^Suggest suggestion]]
-              (assoc acc (keyword name) (suggestion-entry-to-map suggestion)))
+    (reduce (fn [acc [^String name ^Suggest$Suggestion suggestion]]
+              (assoc acc (keyword name) "Empty" ))
             {}
-            (suggestions-as-map suggestions))))
+            (suggestions-as-map suggestions))
+ ;;   ((.println (System/out) "No suggestions recieved"))
+    ))
 
 
 (defn search-response->seq
