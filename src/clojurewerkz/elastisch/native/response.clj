@@ -80,6 +80,12 @@
   [m]
   (get m :facets {}))
 
+(defn suggestions-from
+  "Returns suggestion information from a response as a map. Keys in the map depend on
+   the suggestions requested"
+  [m]
+  (get m :suggestions {}))
+
 (defn ids-from
   "Returns search hit ids from a response"
   [m]
