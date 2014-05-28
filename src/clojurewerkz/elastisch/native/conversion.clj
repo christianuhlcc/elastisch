@@ -493,7 +493,7 @@
 
 (defn ^SearchSourceBuilder ^:private set-sort
   [^SearchSourceBuilder sb sort]
-  (cond 
+  (cond
    (instance? String sort)       (.sort sb ^String sort)
    ;; Allow 'sort' to be a SortBuilder, such as a GeoDistanceSortBuilder.
    (instance? SortBuilder sort)  (.sort sb ^SortBuilder sort)
@@ -744,6 +744,20 @@
             {}
             (.facetsAsMap facets))))
 
+
+(defn- search-suggestions->seq
+  [^Suggest suggestions]
+  (when suggestions
+    (reduce (fn [acc [^String name ^Suggest suggestion]]
+              (assoc acc (keyword name) (suggestion-to-map suggestion)))
+            {}
+            (suggestions-as-map suggestions))))
+
+
+(defn suggestions-as-map
+  [^Suggestions suggestions]
+  (map (fn [acc ^Suggest$Suggestion suggestion] (assoc acc (.getName suggestion) suggestion) {} suggestions)))
+
 (defn search-response->seq
   [^SearchResponse r]
   ;; Example REST API response:
@@ -781,7 +795,7 @@
    :timed_out  (.isTimedOut r)
    :_scroll_id (.getScrollId r)
    :facets     (search-facets->seq (.getFacets r))
-   ;; TODO: suggestions
+   :suggestions (search-suggestions->seq (.getSuggestions r))
    :_shards    {:total      (.getTotalShards r)
                 :successful (.getSuccessfulShards r)
                 :failed     (.getFailedShards r)}
