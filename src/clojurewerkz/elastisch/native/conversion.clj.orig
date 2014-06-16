@@ -38,7 +38,6 @@
            org.elasticsearch.search.suggest.Suggest
            org.elasticsearch.search.suggest.Suggest$Suggestion
            org.elasticsearch.search.suggest.Suggest$Suggestion$Entry
-           org.elasticsearch.search.suggest.SuggestBuilder
            org.elasticsearch.search.facet.statistical.StatisticalFacet
            [org.elasticsearch.search.facet.termsstats TermsStatsFacet TermsStatsFacet$Entry]
            [org.elasticsearch.search.facet.geodistance GeoDistanceFacet GeoDistanceFacet$Entry]
@@ -509,7 +508,7 @@
 (defn ^SearchRequest ->search-request
   [index-name mapping-type {:keys [search-type search_type scroll routing
                                    preference
-                                   query facets suggest from size timeout post-filter
+                                   query facets from size timeout post-filter
                                    min_score version fields sort stats] :as options}]
   (let [r                       (SearchRequest.)
         ^SearchSourceBuilder sb (SearchSourceBuilder.)]
@@ -519,13 +518,6 @@
       (.query sb ^Map (wlk/stringify-keys query)))
     (when facets
       (.facets sb ^Map (wlk/stringify-keys facets)))
-    (when suggest
-      ;; instanciate TermSuggestionBuilder
-      ;; (new SuggestBuilder)
-      ;; (def ts (SuggestBuilder/termSuggestion "what"))
-      ;; (.field ts "text")
-      ;; TODO: implement
-      (.suggest sb ^Map (wlk/stringify-keys suggest)))
     (when from
       (.from sb from))
     (when size
@@ -778,8 +770,8 @@
               (assoc acc (keyword name) "Empty" ))
             {}
             (suggestions-as-map suggestions))
+   ;; (.println (System/out) "No suggestions recieved")
     ))
-
 
 (defn search-response->seq
   [^SearchResponse r]
