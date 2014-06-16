@@ -520,12 +520,11 @@
     (when facets
       (.facets sb ^Map (wlk/stringify-keys facets)))
     (when suggest
-      ;; instanciate TermSuggestionBuilder
-      ;; (new SuggestBuilder)
-      ;; (def ts (SuggestBuilder/termSuggestion "what"))
-      ;; (.field ts "text")
-      ;; TODO: implement
-      (.suggest sb ^Map (wlk/stringify-keys suggest)))
+      (let [tsb (SuggestBuilder/termSuggestion "my_suggestion")]
+        (doto tsb
+          (.text "worst")
+          (.field "text"))
+        (.addSuggestion (.suggest sb) tsb)))
     (when from
       (.from sb from))
     (when size
@@ -769,7 +768,7 @@
 
 (defn- suggestions-as-map
   [^Suggest suggestions]
-  (map (fn [acc ^Suggest$Suggestion suggestion] (assoc acc (.getName suggestion) suggestion) {} suggestions)))
+  (map (fn [acc ^Suggest$Suggestion suggestion] (assoc acc (.getName suggestion) suggestion)) {} suggestions))
 
 (defn- search-suggestions->seq
   [^Suggest suggestions]
